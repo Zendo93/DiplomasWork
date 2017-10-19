@@ -9,8 +9,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -49,17 +48,26 @@
                 android:textSize="30dp"
                 android:text="50"/>
         </LinearLayout>
-
     </LinearLayout>
-
-
-    <com.jjoe64.graphview.GraphView
-
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/graph"
-        android:layout_weight="1"
-        tools:layout_editor_absoluteY="180dp"
-        tools:layout_editor_absoluteX="1452dp" />
-
+        android:text="EKG"
+        android:textSize="20dp"
+        android:textColor="#000000"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/graph"
+            android:layout_weight="1"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tep: 120/80"
+            android:textSize="20dp"
+            android:layout_alignRight="@id/graph"/>
+    </RelativeLayout>
 </LinearLayout>

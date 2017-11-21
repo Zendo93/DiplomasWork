@@ -1,3 +1,4 @@
+
 package sk.stuba.fei.uamt.diplomaswork;
 
 import android.app.Activity;
@@ -36,8 +37,9 @@ public class MainActivity extends AppCompatActivity {
         hideStatusBar();
         try {
             fileReader = inicializeReader();
-            graphValue = readCsvFile(fileReader);
-            graphValues = inicializeValues(graphValue);
+            /*graphValue = readCsvFile(fileReader);
+            graphValues = inicializeValues(graphValue);*/
+            graphValues = inicializeValues(fileReader);
             createGraph(graphValues);
             index = 1;
 
@@ -63,21 +65,14 @@ public class MainActivity extends AppCompatActivity {
 
         series = new LineGraphSeries<>(graphValues);
         graph.addSeries(series);
-        // graph.setTitle("EKG");
-        //graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
-        /*mSeries1 = new LineGraphSeries<>(generateData());
-        graph.addSeries(mSeries1);
-        graph.setTitle("EKG");*/
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setMinY(0);
+        graph.getViewport().setMaxY(1.5);
+        graph.setTitle("EKG");
+        graph.getGridLabelRenderer().setHorizontalAxisTitle(" ");
     }
 
-    /*@Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        ((MainActivity) activity).onSectionAttached(
-                getArguments().getInt(MainActivity.ARG_SECTION_NUMBER));
-    }*/
-
-    @Override
+   @Override
     public void onResume() {
         super.onResume();
         mTimer1 = new Runnable() {
@@ -86,14 +81,14 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     if ((graphValue = readCsvFile(fileReader)) != null)
                     {
-                        if (index > 8)
+                        if (index > 399)
                         {
                             index = 0;
                         }
                         graphValues = updateValue(index,graphValues,graphValue);
                         series.resetData(graphValues);
                         index++;
-                       mHandler.postDelayed(this,500);
+                       mHandler.postDelayed(this,2);
                     }
 
                 } catch (FileNotFoundException e) {
@@ -102,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
-        mHandler.postDelayed(mTimer1, 500);
+        mHandler.postDelayed(mTimer1, 2);
 
     }
 
@@ -123,17 +118,18 @@ public class MainActivity extends AppCompatActivity {
         return value;
     }
 
-    private DataPoint[] inicializeValues(String valueFromFile){
-        DataPoint[] values = new DataPoint[9];
-        values[0] = new DataPoint(0,Double.parseDouble(valueFromFile));
-        for (int i=1; i<9;i++) {
-            values[i] = new DataPoint(i,0);
+    private DataPoint[] inicializeValues(BufferedReader fileReader) throws FileNotFoundException {
+        DataPoint[] values = new DataPoint[400];
+        String valueFromFile = " ";
+        for (int i=0; i<400;i++) {
+            valueFromFile = readCsvFile(fileReader);
+            values[i] = new DataPoint(i*0.01,Double.parseDouble(valueFromFile));
         }
         return  values;
     }
 
     private DataPoint[] updateValue(int i, DataPoint[] values, String valueFromFile){
-        values[i] = new DataPoint(i,Double.parseDouble(valueFromFile));
+        values[i] = new DataPoint(i*0.01,Double.parseDouble(valueFromFile));
         return values;
     }
 

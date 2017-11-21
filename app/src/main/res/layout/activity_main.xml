@@ -28,7 +28,7 @@
             android:gravity="center"
             android:textSize="30dp"
             android:textColor="#000000"
-            android:text="Vlhoksť kože"/>
+            android:text="Vlhkosť kože"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -49,12 +49,13 @@
                 android:text="50"/>
         </LinearLayout>
     </LinearLayout>
-    <TextView
+    <!--TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="EKG"
-        android:textSize="20dp"
-        android:textColor="#000000"/>
+        android:text="mV"
+        android:textSize="15dp"
+        android:layout_margin="5dp"
+        android:textColor="#000000"/-->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -69,5 +70,21 @@
             android:text="Tep: 120/80"
             android:textSize="20dp"
             android:layout_alignRight="@id/graph"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="[mV]"
+            android:textSize="15dp"
+            android:textColor="#000000"
+            android:layout_alignLeft="@id/graph"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="[s]"
+            android:textSize="15dp"
+            android:layout_margin="15dp"
+            android:textColor="#000000"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"/>
     </RelativeLayout>
 </LinearLayout>

@@ -1,141 +1,148 @@
-
 package sk.stuba.fei.uamt.diplomaswork;
 
-import android.app.Activity;
-import android.os.Handler;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.support.v7.app.ActionBar;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
+    private BluetoothAdapter BA;
+    private Set<BluetoothDevice> pairedDevices;
+    private Menu menu;
+    private final int REQUEST_CODE_FOR_ENABLING_BLUETOOTH = 0;
 
-    private final Handler mHandler = new Handler();
-    private Runnable mTimer1;
-    private LineGraphSeries<DataPoint> series;
-    private String graphValue;
-    private BufferedReader fileReader;
-    private DataPoint[] graphValues;
-    private int index;
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                BluetoothDevice device = intent
+                        .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.i("BT", device.getName() + "\n" + device.getAddress());
+                if (device.getName() == null){
+                    generateDevice(context,"unknown device");
+                } else {
+                    generateDevice(context, device.getName());
+                }
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                Log.i("BT", "Discovery finished");
+                MenuItem searchDevices = menu.findItem(R.id.action_settings);
+                searchDevices.setTitle(R.string.action_settings);
+                searchDevices.setEnabled(true);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        BA = BluetoothAdapter.getDefaultAdapter();
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mReceiver, filter);
+        IntentFilter filter2 = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        registerReceiver(mReceiver,filter2);
+        Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(turnOn, REQUEST_CODE_FOR_ENABLING_BLUETOOTH);
+        //startSearching();
         setContentView(R.layout.activity_main);
-        hideStatusBar();
-        try {
-            fileReader = inicializeReader();
-            /*graphValue = readCsvFile(fileReader);
-            graphValues = inicializeValues(graphValue);*/
-            graphValues = inicializeValues(fileReader);
-            createGraph(graphValues);
-            index = 1;
+        setTitle(R.string.title_activity_main);
+    }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        this.menu = menu;
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                refreshFoundedDevices();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
-    private void hideStatusBar() {
-        View decorView = getWindow().getDecorView();
-        // Hide the status bar.
-        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
-        // Remember that you should never show the action bar if the
-        // status bar is hidden, so hide that too if necessary.
-        //ActionBar actionBar = getActionBar();
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
-    }
-
-    private void createGraph(DataPoint[] graphValues) {
-        GraphView graph = (GraphView) findViewById(R.id.graph);
-
-        series = new LineGraphSeries<>(graphValues);
-        graph.addSeries(series);
-        graph.getViewport().setYAxisBoundsManual(true);
-        graph.getViewport().setMinY(0);
-        graph.getViewport().setMaxY(1.5);
-        graph.setTitle("EKG");
-        graph.getGridLabelRenderer().setHorizontalAxisTitle(" ");
-    }
-
-   @Override
-    public void onResume() {
-        super.onResume();
-        mTimer1 = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if ((graphValue = readCsvFile(fileReader)) != null)
-                    {
-                        if (index > 399)
-                        {
-                            index = 0;
-                        }
-                        graphValues = updateValue(index,graphValues,graphValue);
-                        series.resetData(graphValues);
-                        index++;
-                       mHandler.postDelayed(this,2);
-                    }
-
-                } catch (FileNotFoundException e) {
-                   e.printStackTrace();
-                }
-
-            }
-        };
-        mHandler.postDelayed(mTimer1, 2);
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BA.cancelDiscovery();
+        BA.disable();
     }
 
 
     @Override
-    public void onPause() {
-        mHandler.removeCallbacks(mTimer1);
-        super.onPause();
-    }
-
-    private String readCsvFile(BufferedReader fileReader) throws FileNotFoundException {
-        String value = null;
-        try {
-            value = fileReader.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_FOR_ENABLING_BLUETOOTH) {
+            startSearching();
         }
-        return value;
     }
 
-    private DataPoint[] inicializeValues(BufferedReader fileReader) throws FileNotFoundException {
-        DataPoint[] values = new DataPoint[400];
-        String valueFromFile = " ";
-        for (int i=0; i<400;i++) {
-            valueFromFile = readCsvFile(fileReader);
-            values[i] = new DataPoint(i*0.01,Double.parseDouble(valueFromFile));
-        }
-        return  values;
+
+    private void generateDevice(final Context context, final String deviceName){
+        LinearLayout devices = (LinearLayout) findViewById(R.id.devices);
+
+        TextView device = new TextView(context);
+        LinearLayout.LayoutParams lpDevice = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        device.setLayoutParams(lpDevice);
+        device.setPadding(dpToPx(context,10),dpToPx(context,10),0,dpToPx(context,10));
+        device.setClickable(true);
+        device.setText(deviceName);
+        device.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.e("clicked", deviceName);
+                        BA.cancelDiscovery();
+                        startActivity(new Intent(context,ProgressActivity.class));
+                    }
+                });
+
+        TextView line = new TextView(context);
+        line.setWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+        line.setHeight(dpToPx(context,1));
+        line.setBackground(ContextCompat.getDrawable(context,R.color.grey));
+
+        devices.addView(device);
+        devices.addView(line);
+
     }
 
-    private DataPoint[] updateValue(int i, DataPoint[] values, String valueFromFile){
-        values[i] = new DataPoint(i*0.01,Double.parseDouble(valueFromFile));
-        return values;
+    private int dpToPx(Context context ,int dp) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
-    private BufferedReader inicializeReader(){
-        InputStream is = getResources().openRawResource(R.raw.ekgzataz);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-        return reader;
+    private void refreshFoundedDevices(){
+        LinearLayout devices = (LinearLayout) findViewById(R.id.devices);
+        devices.removeAllViews();
+        MenuItem searchDevices = menu.findItem(R.id.action_settings);
+        searchDevices.setTitle("Vyhľadávanie...");
+        searchDevices.setEnabled(false);
+        BA.startDiscovery();
+    }
+
+    private void startSearching(){
+        BA.startDiscovery();
     }
 }

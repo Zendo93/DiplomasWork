@@ -22,7 +22,6 @@ public class ConnectThread extends Thread {
     private byte[] mmBuffer; // mmBuffer store for the stream
     private Handler mHandler;
     private Context context;
-    private ProcessThread processThread;
 
     public ConnectThread(BluetoothDevice device, UUID uuid, Context context) throws IOException {
         // Use a temporary object that is later assigned to mmSocket
@@ -63,18 +62,20 @@ public class ConnectThread extends Thread {
             return;
         }
 
-        processThread = new ProcessThread(mmSocket,mmInStream);
-        processThread.start();
+        BluetoothSocketState state = ((BluetoothSocketState) context.getApplicationContext());
+        state.setBluetoothSocket(mmSocket);
+        state.setInputStream(mmInStream);
         context.startActivity(new Intent(context,ProgressActivity.class));
     }
-
     // Closes the client socket and causes the thread to finish.
     public void cancel() {
         try {
-            processThread.cancel();
             mmSocket.close();
         } catch (IOException e) {
             Log.e("connect", "Could not close the client socket", e);
         }
+    }
+    public BluetoothSocket getMmSocket(){
+        return mmSocket;
     }
 }

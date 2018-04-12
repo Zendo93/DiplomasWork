@@ -43,10 +43,6 @@ public class ProgressActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_progress);
         hideStatusBar();
-        TextView humidity = (TextView) findViewById(R.id.humidity);
-        BluetoothSocketState state = (BluetoothSocketState) getApplicationContext();
-        processThread = new ProcessThread(state.getBluetoothSocket(),state.getInputStream(), humidity);
-        processThread.start();
         try {
             fileReader = inicializeReader();
             /*graphValue = readCsvFile(fileReader);
@@ -54,6 +50,11 @@ public class ProgressActivity extends AppCompatActivity {
             graphValues = inicializeValues(fileReader);
             createGraph(graphValues);
             index = 1;
+            TextView temperature = (TextView) findViewById(R.id.temperature);
+            TextView humidity = (TextView) findViewById(R.id.humidity);
+            BluetoothSocketState state = (BluetoothSocketState) getApplicationContext();
+            processThread = new ProcessThread(state.getBluetoothSocket(),state.getInputStream(), series, graphValues, temperature, humidity);
+            processThread.start();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -80,7 +81,7 @@ public class ProgressActivity extends AppCompatActivity {
         graph.getGridLabelRenderer().setHorizontalAxisTitle(" ");
     }
 
-   @Override
+   /*@Override
     public void onResume() {
         super.onResume();
         mTimer1 = new Runnable() {
@@ -107,7 +108,7 @@ public class ProgressActivity extends AppCompatActivity {
         };
         mHandler.postDelayed(mTimer1, 2);
 
-    }
+    }*/
 
 
     @Override

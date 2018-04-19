@@ -119,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void generateDevice(final Context context, final String deviceName, final BluetoothDevice deviceToConnect){
         LinearLayout devices = (LinearLayout) findViewById(R.id.devices);
-
         TextView device = new TextView(context);
         LinearLayout.LayoutParams lpDevice = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         device.setLayoutParams(lpDevice);
@@ -135,13 +134,13 @@ public class MainActivity extends AppCompatActivity {
 
                         try {
                             connectThreadMicrontroler = new ConnectThread(deviceToConnect,UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"),context);
-                            connectThreadMobile = new ConnectThread(deviceToConnect,UUID.fromString("00001112-0000-1000-8000-00805f9b34fb"),context);
+                            //connectThreadMobile = new ConnectThread(deviceToConnect,UUID.fromString("00001112-0000-1000-8000-00805f9b34fb"),context);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
 
                         connectThreadMicrontroler.run();
-                        connectThreadMobile.run();
+                        //connectThreadMobile.run();
 
                         //deviceToConnect.fetchUuidsWithSdp();
                     }

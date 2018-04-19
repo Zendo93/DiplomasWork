@@ -1,5 +1,6 @@
 package sk.stuba.fei.uamt.diplomaswork;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;

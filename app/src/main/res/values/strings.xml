@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DiplomasWork</string>
+    <string name="app_name">Driver monitor</string>
     <string name="action_settings">Hľadať zariadenia</string>
     <string name="title_activity_main">Vyberte zariadenie</string>
     <string name="title_activity_progress">ProgressActivity</string>

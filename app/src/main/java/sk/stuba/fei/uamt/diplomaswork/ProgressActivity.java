@@ -1,6 +1,11 @@
 
 package sk.stuba.fei.uamt.diplomaswork;
 
+import android.content.Context;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -49,15 +54,14 @@ public class ProgressActivity extends AppCompatActivity {
         hideStatusBar();
         try {
             fileReader = inicializeReader();
-            /*graphValue = readCsvFile(fileReader);
-            graphValues = inicializeValues(graphValue);*/
             graphValues = inicializeValues(fileReader);
             createGraph(graphValues);
-            //calculateHeartRate();
+
             TextView temperature = (TextView) findViewById(R.id.temperature);
             TextView humidity = (TextView) findViewById(R.id.heartRate);
+            TextView warning = (TextView) findViewById(R.id.warning);
             BluetoothSocketState state = (BluetoothSocketState) getApplicationContext();
-            processThread = new ProcessThread(state.getBluetoothSocket(),state.getInputStream(), series, graphValues, temperature, humidity);
+            processThread = new ProcessThread(state.getBluetoothSocket(),state.getInputStream(), series, graphValues, temperature, humidity, warning, getBeepAdapter(100));
             processThread.start();
 
         } catch (FileNotFoundException e) {
@@ -85,105 +89,6 @@ public class ProgressActivity extends AppCompatActivity {
         graph.getGridLabelRenderer().setHorizontalAxisTitle(" ");
     }
 
-   /*@Override
-    public void onResume() {
-        super.onResume();
-        mTimer1 = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if ((graphValue = readCsvFile(fileReader)) != null)
-                    {
-                        previousElement = peakElement;
-                        peakElement = nextElement;
-                        nextElement = Double.parseDouble(graphValue);
-
-
-                        if (peakElement > previousElement && peakElement > nextElement && peakElement > 1){
-                            Log.e("peak", Double.toString(peakElement));
-                            if (firstPeak) {
-                                timeBegin = System.currentTimeMillis();
-                                firstPeak = false;
-                            } else {
-                                Log.e("peak", Long.toString(timeBegin) + " timeToBegin");
-                                timeEnd = System.currentTimeMillis();
-                                Log.e("peak", Long.toString(timeEnd) + " timeToEnd");
-                                difference = (timeEnd - timeBegin)/1000.0;
-                                timeBegin = timeEnd;
-
-                                heartBeat = (60 / difference);
-
-
-                                Log.e("peak", Double.toString(difference) + " difference");
-                                Log.e("peak", Double.toString(heartBeat) + " heartBeat");
-                            }
-                        }
-
-                        if (index > 399)
-                        {
-                            index = 0;
-                        }
-                        graphValues = updateValue(index,graphValues,graphValue);
-                        series.resetData(graphValues);
-                        index++;
-                       mHandler.postDelayed(this, 0);
-                    }
-
-                } catch (FileNotFoundException e) {
-                   e.printStackTrace();
-                }
-
-            }
-        };
-        mHandler.postDelayed(mTimer1, 0);
-
-    }
-
-
-    @Override
-    public void onPause() {
-        mHandler.removeCallbacks(mTimer1);
-        super.onPause();
-    }*/
-
-    private void calculateHeartRate() throws FileNotFoundException {
-        while ((graphValue = readCsvFile(fileReader)) != null)
-        {
-            previousElement = peakElement;
-            peakElement = nextElement;
-            nextElement = Double.parseDouble(graphValue);
-
-
-            if (peakElement > previousElement && peakElement > nextElement && peakElement > 1){
-                Log.e("peak", Double.toString(peakElement));
-                if (firstPeak) {
-                    timeBegin = System.currentTimeMillis();
-                    firstPeak = false;
-                } else {
-                    Log.e("peak", Long.toString(timeBegin) + " timeToBegin");
-                    timeEnd = System.currentTimeMillis();
-                    Log.e("peak", Long.toString(timeEnd) + " timeToEnd");
-                    difference = (timeEnd - timeBegin)/1000.0;
-                    timeBegin = timeEnd;
-
-                    heartBeat = (60 / difference);
-
-
-                    Log.e("peak", Double.toString(difference) + " difference");
-                    Log.e("peak", Double.toString(heartBeat) + " heartBeat");
-                }
-            }
-
-                        if (index > 399)
-                        {
-                            index = 0;
-                        }
-                        graphValues = updateValue(index,graphValues,graphValue);
-                        series.resetData(graphValues);
-                        index++;
-        }
-
-    }
     private String readCsvFile(BufferedReader fileReader) throws FileNotFoundException {
         String value = null;
         try {
@@ -233,5 +138,16 @@ public class ProgressActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         hideStatusBar();
+    }
+    private MediaPlayer getBeepAdapter(int volume)
+    {
+        AudioManager manager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        manager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
+
+        Uri notification = RingtoneManager
+                .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+        return MediaPlayer.create(getApplicationContext(), notification);
+
     }
 }

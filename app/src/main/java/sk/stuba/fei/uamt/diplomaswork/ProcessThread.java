@@ -1,9 +1,15 @@
 package sk.stuba.fei.uamt.diplomaswork;
 
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.series.DataPoint;
@@ -22,6 +28,7 @@ public class ProcessThread extends Thread {
     private byte[] mmBuffer;
     private TextView temperature;
     private TextView heartRate;
+    private TextView warning;
     private int counter;
     private boolean startSaving = false;
     private boolean endSaving = true;
@@ -33,19 +40,23 @@ public class ProcessThread extends Thread {
     private double nextElement=0;
     private int counter2 = 0;
     private int peakCounter = 0;
-    long timeBegin = 0;
-    long timeEnd = 0;
-    double difference = 0;
-    double heartBeat = 0;
-    boolean firstPeak = true;
+    private long timeBegin = 0;
+    private long timeEnd = 0;
+    private double difference = 0;
+    private double heartBeat = 0;
+    private boolean firstPeak = true;
+    private MediaPlayer player;
 
-    public ProcessThread(BluetoothSocket mmSocket, InputStream mmInStream,LineGraphSeries<DataPoint> series,DataPoint[] graphValues, TextView temperature, TextView heartRate) {
+
+    public ProcessThread(BluetoothSocket mmSocket, InputStream mmInStream,LineGraphSeries<DataPoint> series,DataPoint[] graphValues, TextView temperature, TextView heartRate, TextView warning, MediaPlayer player) {
         this.mmSocket = mmSocket;
         this.mmInStream = mmInStream;
         this.series = series;
         this.graphValues = graphValues;
         this.temperature = temperature;
         this.heartRate = heartRate;
+        this.warning = warning;
+        this.player =player;
         this.counter = 0;
     }
 
@@ -78,6 +89,12 @@ public class ProcessThread extends Thread {
                             }
                             reRenderGraph(index, message);
                             index++;
+                            if (heartBeat < 40 || heartBeat > 110){
+                                displyWarning(warning,true);
+                                makeNoise();
+                            } else {
+                                displyWarning(warning, false);
+                            }
                         }
                     }
                     Log.e("BT", data.toString());
@@ -147,6 +164,10 @@ public class ProcessThread extends Thread {
         String parts[] = data.toString().split("=");
         return parts[1];
     }
+    private void makeNoise(){
+        player.start();
+    }
+
     private void displyTemperature(final TextView temperature, final String text) {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
@@ -161,6 +182,19 @@ public class ProcessThread extends Thread {
         handler.post(new Runnable() {
             public void run() {
                 heartRate.setText(text);
+            }
+        });
+    }
+    private void displyWarning(final TextView warning, final boolean variable) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            public void run() {
+                if (variable){
+                    warning.setVisibility(View.VISIBLE);
+                } else{
+                    warning.setVisibility(View.GONE);
+                }
+
             }
         });
     }

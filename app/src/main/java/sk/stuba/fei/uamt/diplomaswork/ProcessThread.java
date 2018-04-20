@@ -65,17 +65,20 @@ public class ProcessThread extends Thread {
                 if (message.contains("*") && counter > 0){
                     if (data.toString().contains("TEP")){
                         message = parseData(data);
-                        displyTemperature(temperature, message);
+                        if (isNumeric(message)){
+                            displyTemperature(temperature, message);
+                        }
                      } else {
                         message = parseData(data);
-                        calculateHeartBeat(message);
+                        if (isNumeric(message)) {
+                            calculateHeartBeat(message);
 
-                        if (index > 399)
-                        {
-                            index = 0;
+                            if (index > 399) {
+                                index = 0;
+                            }
+                            reRenderGraph(index, message);
+                            index++;
                         }
-                        reRenderGraph(index, message);
-                        index++;
                     }
                     Log.e("BT", data.toString());
                     data.setLength(0);
@@ -97,13 +100,26 @@ public class ProcessThread extends Thread {
         }
     }
 
+    public static boolean isNumeric(String str)
+    {
+        try
+        {
+            double d = Double.parseDouble(str);
+        }
+        catch(NumberFormatException nfe)
+        {
+            return false;
+        }
+        return true;
+    }
+
     private void calculateHeartBeat(String data){
         previousElement = peakElement;
         peakElement = nextElement;
         nextElement = Double.parseDouble(data);
 
 
-        if (peakElement > previousElement && peakElement > nextElement){
+        if (peakElement > previousElement && peakElement > nextElement && peakElement > 1){
             Log.e("peak", Double.toString(peakElement));
             if (firstPeak) {
                 timeBegin = System.currentTimeMillis();
@@ -120,7 +136,7 @@ public class ProcessThread extends Thread {
 
                 Log.e("peak", Double.toString(difference) + " difference");
                 Log.e("peak", Double.toString(heartBeat) + " heartBeat");
-                displyHeartRate(heartRate,  Double.toString(peakElement) + "\n heartBeat=" + Long.toString(Math.round(heartBeat)));
+                displyHeartRate(heartRate,  /*Double.toString(peakElement) + "\n heartBeat=" + */Long.toString(Math.round(heartBeat)) + " bpm");
             }
         }
 

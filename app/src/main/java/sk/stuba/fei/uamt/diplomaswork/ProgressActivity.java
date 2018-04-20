@@ -80,7 +80,7 @@ public class ProgressActivity extends AppCompatActivity {
         graph.addSeries(series);
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(0);
-        graph.getViewport().setMaxY(1.5);
+        graph.getViewport().setMaxY(2.5);
         graph.setTitle("EKG");
         graph.getGridLabelRenderer().setHorizontalAxisTitle(" ");
     }

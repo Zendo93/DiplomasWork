@@ -136,7 +136,7 @@ public class ProcessThread extends Thread {
         nextElement = Double.parseDouble(data);
 
 
-        if (peakElement > previousElement && peakElement > nextElement && peakElement > 1){
+        if (peakElement > previousElement && peakElement > nextElement && peakElement > 1.3){
             Log.e("peak", Double.toString(peakElement));
             if (firstPeak) {
                 timeBegin = System.currentTimeMillis();
